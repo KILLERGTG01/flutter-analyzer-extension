@@ -113,11 +113,16 @@ export async function activate(
               statusBar.text = '$(check) Flutter Reviewer: Ready';
               break;
             case 'error':
-              statusBar.text = '$(check) Flutter Reviewer: Ready';
+              statusBar.text = '$(error) Flutter Reviewer: Review failed';
+              vscode.window.showWarningMessage(
+                `Flutter Code Reviewer: Review failed — ${status.message}`,
+              );
               break;
           }
         });
       } catch (err) {
+        // Defensive guard: DiagnosticProvider does not re-throw, but kept here
+        // in case a future refactor changes the error-propagation contract.
         vscode.window.showWarningMessage(
           `Flutter Code Reviewer: Review failed — ${(err as Error).message}`,
         );
