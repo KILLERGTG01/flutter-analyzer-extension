@@ -1,0 +1,60 @@
+{
+  "name": "flutter-code-reviewer",
+  "displayName": "Flutter Code Reviewer",
+  "description": "Reviews Dart files on save using a local Ollama model and shows results as VS Code diagnostics.",
+  "version": "0.1.0",
+  "publisher": "your-publisher-id",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Linters"],
+  "activationEvents": ["onLanguage:dart"],
+  "main": "./out/extension.js",
+  "icon": "icon.png",
+  "contributes": {
+    "configuration": {
+      "title": "Flutter Code Reviewer",
+      "properties": {
+        "flutterCodeReviewer.ollamaUrl": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Base URL for the Ollama API."
+        },
+        "flutterCodeReviewer.modelName": {
+          "type": "string",
+          "default": "code-review-flutter",
+          "description": "Ollama model name to use for code review."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "flutter-code-reviewer.copyFixPrompt",
+        "title": "Flutter Code Reviewer: Copy fix prompt"
+      },
+      {
+        "command": "flutter-code-reviewer.viewDetails",
+        "title": "Flutter Code Reviewer: View details"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.0.0",
+    "@types/jest": "^29.0.0",
+    "typescript": "^5.3.0",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": ["**/src/**/*.test.ts"],
+    "moduleNameMapper": {
+      "^vscode$": "<rootDir>/src/__mocks__/vscode.ts"
+    }
+  }
+}
