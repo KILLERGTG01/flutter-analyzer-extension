@@ -2,9 +2,12 @@
 src/**
 node_modules/**
 **/*.ts
-!out/**
 out/**/*.map
+out/**/*.test.js
+out/__mocks__/**
 tsconfig.json
 .gitignore
 package-lock.json
 docs/**
+.claude/**
+model/**
