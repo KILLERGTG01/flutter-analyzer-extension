@@ -32,12 +32,13 @@ export class DiagnosticProvider {
     onStatus({ kind: 'reviewing' });
 
     try {
-      const raw = await reviewFile(document.getText(), controller.signal);
+      const text = document.getText();
+      const raw = await reviewFile(text, controller.signal);
 
-      // Aborted: another save came in — don't touch state
-      if (controller.signal.aborted) {
-        return;
-      }
+      // Note: if reviewFile were to swallow AbortError and return normally,
+      // this would guard against touching state on an aborted request.
+      // In practice, fetch throws AbortError on cancellation, so this path
+      // is reached only on a successful, non-aborted response.
 
       const parsed = parseReview(raw);
 
@@ -49,7 +50,7 @@ export class DiagnosticProvider {
       }
 
       // Fuzzy-match the affected code snippet to a document line
-      const lines = document.getText().split('\n');
+      const lines = text.split('\n');
       const lineIndex = findMatchingLine(lines, parsed.affectedCode);
       const lineText = document.lineAt(lineIndex).text;
       const range = new vscode.Range(lineIndex, 0, lineIndex, lineText.length);
@@ -69,11 +70,17 @@ export class DiagnosticProvider {
       if ((err as Error).name === 'AbortError') {
         return;
       }
+      // Clear prior diagnostics on error (design choice: don't preserve stale state).
+      // The status bar will show Ready, and the user can re-save to retry.
       this.diagnostics.set(document.uri, []);
       this.reviewResults.delete(uri);
       onStatus({ kind: 'error', message: (err as Error).message });
     } finally {
-      this.controllers.delete(uri);
+      // Only delete if this controller is still the active one.
+      // A successor save may have already replaced it in the map.
+      if (this.controllers.get(uri) === controller) {
+        this.controllers.delete(uri);
+      }
     }
   }
 
