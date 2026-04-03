@@ -77,7 +77,7 @@ export async function activate(
     statusBar.text = '$(error) Flutter Reviewer: Ollama not found';
     vscode.window.showInformationMessage(
       'Flutter Code Reviewer: Ollama is not running. ' +
-        'Install it from https://ollama.com and start it before using this extension.',
+        'Install it from https://ollama.com, start it, then reload this window (Developer: Reload Window).',
     );
     return;
   }
@@ -86,7 +86,7 @@ export async function activate(
     statusBar.text = '$(error) Flutter Reviewer: Model not found';
     vscode.window.showInformationMessage(
       `Flutter Code Reviewer: Model "${modelName}" not found. ` +
-        `Run: ollama pull ${modelName}`,
+        `Run: ollama pull ${modelName}, then reload this window (Developer: Reload Window).`,
     );
     return;
   }
