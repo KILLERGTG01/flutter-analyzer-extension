@@ -11,7 +11,7 @@ export type ReviewResult = {
 
 export type ParsedReview = CleanResult | ReviewResult;
 
-const CLEAN: CleanResult = { kind: 'clean' };
+const CLEAN: CleanResult = Object.freeze({ kind: 'clean' });
 
 export function parseReview(raw: string): ParsedReview {
   const trimmed = raw.trim();
@@ -26,7 +26,8 @@ export function parseReview(raw: string): ParsedReview {
   }
 
   const contextMatch = trimmed.match(/^CONTEXT:\s*(.+)$/m);
-  const affectedCodeMatch = trimmed.match(/```dart\s*([\s\S]*?)```/);
+  const affectedCodeMatch = trimmed.match(/AFFECTED CODE:\s*```dart\s*([\s\S]*?)```/);
+  // [\s\S]* crosses newlines; $ with /m matches end-of-string here because [\s\S]* is greedy
   const fixMatch = trimmed.match(/^FIX:\s*([\s\S]*)$/m);
 
   if (!contextMatch || !affectedCodeMatch || !fixMatch) {
