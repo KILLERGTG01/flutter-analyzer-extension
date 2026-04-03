@@ -9,6 +9,8 @@ export class FlutterCodeActionProvider implements vscode.CodeActionProvider {
     _range: vscode.Range | vscode.Selection,
     context: vscode.CodeActionContext,
   ): vscode.CodeAction[] {
+    // context.diagnostics is VS Code's authoritative truth for what is currently shown.
+    // Only produce actions when at least one of our diagnostics is actually visible.
     const relevant = context.diagnostics.filter(
       (d) => d.source === 'flutter-code-reviewer',
     );
@@ -16,6 +18,8 @@ export class FlutterCodeActionProvider implements vscode.CodeActionProvider {
       return [];
     }
 
+    // Guard against a race where VS Code delivers a code-action request after
+    // a diagnostic was shown but before DiagnosticProvider cleared the map entry.
     const result = this.reviewResults.get(document.uri.toString());
     if (!result) {
       return [];
