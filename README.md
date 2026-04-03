@@ -25,7 +25,7 @@ Reviews `.dart` files on save using a locally-running [Ollama](https://ollama.co
 ## Setup
 
 1. Install Ollama: https://ollama.com
-2. Pull the model: `ollama pull code-review-flutter`
+2. Pull the model: `ollama pull gtg07817/code-review-flutter`
 3. Open a Flutter project and save any `.dart` file
 
 ## Building the model locally
