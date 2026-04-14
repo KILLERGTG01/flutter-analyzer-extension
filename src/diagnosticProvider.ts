@@ -37,7 +37,7 @@ export class DiagnosticProvider {
 
       const parsed = parseReview(raw);
 
-      if (parsed.kind === 'clean') {
+      if (!Array.isArray(parsed)) {
         this.diagnostics.set(document.uri, []);
         this.reviewResults.delete(uri);
         onStatus({ kind: 'clean' });
