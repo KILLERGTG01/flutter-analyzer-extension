@@ -147,7 +147,7 @@ export async function activate(
 
               // Show notification once per unique set of issues for this file.
               // Key = uri + sorted diagnostic codes, so re-saving with same issues is silent.
-              const key = `${uri}::${results.map((r) => r.diagnosticCode).join(',')}`;
+              const key = `${uri}::${results.map((r) => r.diagnosticCode).sort().join(',')}`;
               if (!notifiedKeys.has(key)) {
                 notifiedKeys.add(key);
                 const bugNames = results.map((r) => r.bugName).join(', ');
