@@ -6,6 +6,10 @@
   "publisher": "AnuragGoel",
   "license": "MIT",
   "engines": { "vscode": "^1.85.0" },
+  "repository": {
+    "type" : "git" ,
+    "url" : "https://github.com/KILLERGTG01/flutter-analyzer-extension.git"
+  },
   "categories": ["Linters"],
   "activationEvents": ["onLanguage:dart"],
   "main": "./out/extension.js",
