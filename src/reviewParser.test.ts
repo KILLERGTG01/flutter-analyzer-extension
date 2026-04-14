@@ -105,6 +105,7 @@ describe('parseReview', () => {
     expect(result[0].bugName).toBe('Null check on nullable');
     expect(result[0].diagnosticCode).toBe('null_check');
     expect(result[0].fix).toBe('Use a null-aware operator instead.');
+    expect(result[0].affectedCode).toBe('final x = data!.value;');
   });
 
   it('skips malformed blocks and returns only valid ones', () => {

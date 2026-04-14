@@ -39,6 +39,8 @@ export function parseReview(raw: string): ParsedReview {
 
     const contextMatch = block.match(/^CONTEXT:\s*(.+)$/m);
     const affectedCodeMatch = block.match(/AFFECTED CODE:\s*```dart\s*([\s\S]*?)```/);
+    // [\s\S]* crosses newlines; $ with /m matches end-of-block here because [\s\S]* is greedy.
+    // .trim() on the result removes trailing newlines/blank lines.
     const fixMatch = block.match(/^FIX:\s*([\s\S]*)$/m);
 
     if (!contextMatch || !affectedCodeMatch || !fixMatch) {
