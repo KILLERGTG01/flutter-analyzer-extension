@@ -3,7 +3,7 @@
   "displayName": "Flutter Code Reviewer",
   "description": "Reviews Dart files on save using a local Ollama model and shows results as VS Code diagnostics.",
   "version": "0.1.0",
-  "publisher": "your-publisher-id",
+  "publisher": "AnuragGoel",
   "license": "MIT",
   "engines": { "vscode": "^1.85.0" },
   "categories": ["Linters"],
