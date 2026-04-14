@@ -28,7 +28,28 @@ export async function reviewFile(
     body: JSON.stringify({
       model: modelName,
       stream: false,
-      messages: [{ role: 'user', content: code }],
+      messages: [
+        {
+          role: 'system',
+          content: [
+            'You are a Flutter code reviewer.',
+            'Find ALL bugs in the provided code.',
+            'For each bug found, output a block in exactly this format:',
+            '',
+            'FLUTTER BUG: <short descriptive name> [<snake_case_code>]',
+            'CONTEXT: <class and/or method where the bug appears>',
+            'AFFECTED CODE:',
+            '```dart',
+            '<the affected code snippet>',
+            '```',
+            'FIX: <explanation of how to fix it>',
+            '',
+            'Separate multiple bug blocks with a blank line.',
+            'If no bugs are found, output exactly: FLUTTER REVIEW: No issues detected.',
+          ].join('\n'),
+        },
+        { role: 'user', content: code },
+      ],
     }),
     signal,
   });
