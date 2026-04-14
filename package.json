@@ -31,7 +31,7 @@
         },
         "flutterCodeReviewer.modelName": {
           "type": "string",
-          "default": "code-review-flutter",
+          "default": "gtg07817/code-review-flutter",
           "description": "Ollama model name to use for code review."
         }
       }
