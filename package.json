@@ -11,6 +11,7 @@
     "url" : "https://github.com/KILLERGTG01/flutter-analyzer-extension.git"
   },
   "categories": ["Linters"],
+  "icon": "logo.icos",
   "activationEvents": ["onLanguage:dart"],
   "main": "./out/extension.js",
   "contributes": {
