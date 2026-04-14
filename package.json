@@ -44,6 +44,10 @@
       {
         "command": "flutter-code-reviewer.viewDetails",
         "title": "Flutter Code Reviewer: View details"
+      },
+      {
+        "command": "flutter-code-reviewer.copyAllFixPrompts",
+        "title": "Flutter Code Reviewer: Copy all fix prompts"
       }
     ]
   },
