@@ -82,4 +82,20 @@ describe('FlutterCodeActionProvider', () => {
     expect(actions[1].command?.command).toBe('flutter-code-reviewer.viewDetails');
     expect(actions[1].command?.arguments).toEqual([mockResult2]);
   });
+
+  it('returns two QuickFix actions matching first diagnostic by code', () => {
+    const map = new Map([[uri, [mockResult1, mockResult2]]]);
+    const provider = new FlutterCodeActionProvider(map);
+
+    // Hover over the first diagnostic
+    const actions = provider.provideCodeActions(
+      makeDocument(),
+      {} as never,
+      makeContext([{ source: 'flutter-code-reviewer', code: 'missing_mounted_check' }]),
+    );
+
+    expect(actions).toHaveLength(2);
+    expect(actions[0].command?.arguments).toEqual([mockResult1]);
+    expect(actions[1].command?.arguments).toEqual([mockResult1]);
+  });
 });
