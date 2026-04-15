@@ -48,7 +48,18 @@ class FlutterCodeActionProvider {
         }
         // Guard against a race where VS Code delivers a code-action request after
         // a diagnostic was shown but before DiagnosticProvider cleared the map entry.
-        const result = this.reviewResults.get(document.uri.toString());
+        const results = this.reviewResults.get(document.uri.toString());
+        if (!results) {
+            return [];
+        }
+        // Match the hovered diagnostic to its specific ReviewResult by diagnosticCode.
+        // Guard: VS Code's Diagnostic.code can be string | number | {value,target} | undefined.
+        // We only set string codes in diagnosticProvider.ts; reject unexpected shapes explicitly.
+        const hoveredCode = relevant[0].code;
+        if (typeof hoveredCode !== 'string') {
+            return [];
+        }
+        const result = results.find((r) => r.diagnosticCode === hoveredCode);
         if (!result) {
             return [];
         }

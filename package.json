@@ -2,7 +2,7 @@
   "name": "flutter-code-reviewer",
   "displayName": "Flutter Code Reviewer",
   "description": "Reviews Dart files on save using a local Ollama model and shows results as VS Code diagnostics.",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "publisher": "AnuragGoel",
   "license": "MIT",
   "engines": {

@@ -39,6 +39,18 @@ const vscode = __importStar(require("vscode"));
 const diagnosticProvider_1 = require("./diagnosticProvider");
 const codeActionProvider_1 = require("./codeActionProvider");
 const ollamaClient_1 = require("./ollamaClient");
+function buildAcePrompt(result) {
+    return [
+        `ACT: You are a Flutter developer fixing a ${result.bugName} bug.`,
+        `CONTEXT: ${result.context}`,
+        '',
+        'Affected code:',
+        '```dart',
+        result.affectedCode,
+        '```',
+        `EXECUTE: ${result.fix}`,
+    ].join('\n');
+}
 async function activate(context) {
     // Status bar
     const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
@@ -48,24 +60,28 @@ async function activate(context) {
     // Diagnostic collection
     const diagnosticCollection = vscode.languages.createDiagnosticCollection('flutter-code-reviewer');
     context.subscriptions.push(diagnosticCollection);
-    // Diagnostic provider (owns AbortControllers + shared ReviewResult map)
+    // Diagnostic provider (owns AbortControllers + shared ReviewResult[] map)
     const provider = new diagnosticProvider_1.DiagnosticProvider(diagnosticCollection);
     context.subscriptions.push({ dispose: () => provider.dispose() });
     // Code action provider — shares the reviewResults map
     context.subscriptions.push(vscode.languages.registerCodeActionsProvider({ language: 'dart' }, new codeActionProvider_1.FlutterCodeActionProvider(provider.reviewResults), { providedCodeActionKinds: [vscode.CodeActionKind.QuickFix] }));
-    // Command: copy fix prompt
+    // Tracks the most recent set of results for the status bar copy command
+    let latestResults;
+    // Tracks which issue sets have already triggered a notification (avoid repeat popups)
+    const notifiedKeys = new Set();
+    // Command: copy single fix prompt (from diagnostic lightbulb) — ACE format
     context.subscriptions.push(vscode.commands.registerCommand('flutter-code-reviewer.copyFixPrompt', async (result) => {
-        const text = [
-            `FLUTTER BUG: ${result.bugName} [${result.diagnosticCode}]`,
-            `CONTEXT: ${result.context}`,
-            'AFFECTED CODE:',
-            '```dart',
-            result.affectedCode,
-            '```',
-            `FIX: ${result.fix}`,
-        ].join('\n');
-        await vscode.env.clipboard.writeText(text);
+        await vscode.env.clipboard.writeText(buildAcePrompt(result));
         vscode.window.showInformationMessage('Flutter Code Reviewer: Fix prompt copied to clipboard.');
+    }));
+    // Command: copy all fix prompts (from status bar / notification) — ACE format
+    context.subscriptions.push(vscode.commands.registerCommand('flutter-code-reviewer.copyAllFixPrompts', async () => {
+        if (!latestResults || latestResults.length === 0) {
+            return;
+        }
+        const text = latestResults.map(buildAcePrompt).join('\n---\n');
+        await vscode.env.clipboard.writeText(text);
+        vscode.window.showInformationMessage(`Flutter Code Reviewer: ${latestResults.length} fix prompt(s) copied to clipboard.`);
     }));
     // Command: view details
     context.subscriptions.push(vscode.commands.registerCommand('flutter-code-reviewer.viewDetails', (result) => {
@@ -93,30 +109,61 @@ async function activate(context) {
         if (document.languageId !== 'dart') {
             return;
         }
+        const uri = document.uri.toString();
         try {
-            await provider.review(document, (status) => {
+            await provider.review(document, async (status) => {
                 switch (status.kind) {
                     case 'reviewing':
                         statusBar.text = '$(sync~spin) Flutter Reviewer: Reviewing…';
+                        statusBar.command = undefined;
                         break;
-                    case 'issue':
-                        statusBar.text = '$(warning) Flutter Reviewer: 1 issue found';
+                    case 'issue': {
+                        const { results } = status;
+                        const count = results.length;
+                        latestResults = results;
+                        statusBar.text = `$(warning) Flutter Reviewer: ${count} issue(s) found`;
+                        statusBar.command = 'flutter-code-reviewer.copyAllFixPrompts';
+                        // Show notification once per unique set of issues for this file.
+                        // Key = uri + sorted diagnostic codes, so re-saving with same issues is silent.
+                        const key = `${uri}::${results.map((r) => r.diagnosticCode).sort().join(',')}`;
+                        if (!notifiedKeys.has(key)) {
+                            notifiedKeys.add(key);
+                            const bugNames = results.map((r) => r.bugName).join(', ');
+                            const selection = await vscode.window.showInformationMessage(`Flutter Code Reviewer found ${count} issue(s): ${bugNames}`, 'Copy All Prompts');
+                            if (selection === 'Copy All Prompts') {
+                                await vscode.commands.executeCommand('flutter-code-reviewer.copyAllFixPrompts');
+                            }
+                        }
                         break;
+                    }
                     case 'clean':
+                        latestResults = undefined;
                         statusBar.text = '$(check) Flutter Reviewer: Ready';
+                        statusBar.command = undefined;
+                        for (const k of [...notifiedKeys]) {
+                            if (k.startsWith(`${uri}::`)) {
+                                notifiedKeys.delete(k);
+                            }
+                        }
                         break;
                     case 'error':
+                        latestResults = undefined;
                         statusBar.text = '$(error) Flutter Reviewer: Review failed';
+                        statusBar.command = undefined;
+                        for (const k of [...notifiedKeys]) {
+                            if (k.startsWith(`${uri}::`)) {
+                                notifiedKeys.delete(k);
+                            }
+                        }
                         vscode.window.showWarningMessage(`Flutter Code Reviewer: Review failed — ${status.message}`);
                         break;
                 }
             });
         }
         catch (err) {
-            // Defensive guard: DiagnosticProvider does not re-throw, but kept here
-            // in case a future refactor changes the error-propagation contract.
             vscode.window.showWarningMessage(`Flutter Code Reviewer: Review failed — ${err.message}`);
             statusBar.text = '$(check) Flutter Reviewer: Ready';
+            statusBar.command = undefined;
         }
     }));
 }
